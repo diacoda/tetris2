@@ -1,3 +1,13 @@
 {
-    "python.defaultInterpreterPath": "venv/bin/python"
+  "python.defaultInterpreterPath": "venv/bin/python",
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "black",
+  "python.linting.enabled": true,
+  "python.analysis.typeCheckingMode": "basic",
+  "terminal.integrated.defaultProfile.osx": "bash",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true
+  }
 }

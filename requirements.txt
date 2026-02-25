@@ -1,0 +1,8 @@
+# Runtime
+pygame>=2.5,<2.6
+
+# Dev (optional but recommended)
+# black==24.*        # code formatter
+# isort==5.*         # import sorter
+# mypy==1.*          # static typing
+# pytest==8.*        # tests

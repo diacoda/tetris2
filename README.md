@@ -92,3 +92,10 @@ Gatekeeper may warn on first launch (unsigned). Right-click → Open once or sig
 - Persist high scores and settings (~/.tetris/config.json)
 - Theme/skin system and colorblind modes
 
+# Setup
+
+cd ~/tetris-game
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
