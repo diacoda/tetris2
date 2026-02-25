@@ -1,0 +1,84 @@
+# ---------------------------------------
+# Python
+# ---------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+*.pkl.gz
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.python-version
+
+# ---------------------------------------
+# macOS junk
+# ---------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Thumbnails
+*.icloud
+
+# ---------------------------------------
+# VS Code
+# ---------------------------------------
+.vscode/
+.history/
+*.code-workspace
+
+# ---------------------------------------
+# Logs
+# ---------------------------------------
+*.log
+logs/
+*.out
+*.err
+
+# ---------------------------------------
+# PyInstaller / bundled app artifacts
+# ---------------------------------------
+# Will contain your macOS .app bundle if you package the game
+dist/
+build/
+*.spec
+
+# When using pyinstaller --onefile
+*.dmg
+*.app
+*.icns
+
+# ---------------------------------------
+# Test / cache directories
+# ---------------------------------------
+.cache/
+pytest_cache/
+.coverage
+htmlcov/
+
+# ---------------------------------------
+# Temporary / backup files
+# ---------------------------------------
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
