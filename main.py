@@ -27,17 +27,15 @@ def recreate_window(dims, flags=pygame.DOUBLEBUF):
 def main():
     pygame.init()
 
-    # Allow only necessary events (cuts overhead)
     pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
 
     dims = compute_dims()
     screen = recreate_window(dims)
-    pygame.display.set_caption("Classic Tetris — Optimized Rendering")
+    pygame.display.set_caption("Classic Tetris — Board Surface Cache")
 
     font = pygame.font.SysFont(None, 22)
     big_font = pygame.font.SysFont(None, 42)
 
-    # Pre-rendered assets (cells, bg, HUD caches)
     render = RenderAssets(dims, font)
 
     clock = pygame.time.Clock()
@@ -57,6 +55,9 @@ def main():
     overlay = Overlay()
     soft_drop_held = False
 
+    # Build initial board surface (empty)
+    render.rebuild_board_surface(board)
+
     def refresh_assets_if_cell_changed():
         nonlocal dims, screen, render
         new_dims = compute_dims()
@@ -64,9 +65,10 @@ def main():
             dims = new_dims
             screen = recreate_window(dims)
             render = RenderAssets(dims, font)
+            render.rebuild_board_surface(board)
 
     while True:
-        dt = clock.tick_busy_loop(60)  # more consistent timing on macOS
+        dt = clock.tick_busy_loop(60)
         acc += dt
 
         for e in pygame.event.get():
@@ -96,18 +98,15 @@ def main():
                         score += c*(level+1)*100; lines += c
                         if lines // 10 > level:
                             level += 1; grav = gravity_interval(level)
+                    # Rebuild board surface after any change to locked blocks
+                    render.rebuild_board_surface(board)
                     current = Piece.spawn(next_type)
                     next_type = rng.next_piece()
                     acc = 0; lock_timer = 0; is_grounded = False
                     if collide(board, current):
-                        # Game over screen
+                        # Game over
                         render.redraw_static(screen)
-                        # Draw board state
-                        for y in range(ROWS):
-                            for x in range(COLS):
-                                tcell = board[y][x]
-                                if tcell: render.draw_cell(screen, tcell, x, y)
-                        render.draw_panel_hud(screen, score, level, lines, next_type)
+                        render.blit_board_surface(screen)
                         msg = big_font.render("GAME OVER (R to Restart)", True, (255,220,220))
                         rect = msg.get_rect(center=(dims.board_x + dims.board_w//2, dims.board_y + dims.board_h//2))
                         screen.blit(msg, rect)
@@ -128,12 +127,8 @@ def main():
 
         if overlay.active:
             render.redraw_static(screen)
-            # Draw board (use blits)
-            for y in range(ROWS):
-                for x in range(COLS):
-                    tcell = board[y][x]
-                    if tcell: render.draw_cell(screen, tcell, x, y)
-            # Current + Ghost
+            render.blit_board_surface(screen)
+            # Moving piece + ghost only
             gy = ghost_y(board, current)
             for r, row in enumerate(current.shape):
                 for c, v in enumerate(row):
@@ -143,8 +138,7 @@ def main():
                     if v and current.y + r >= 0: render.draw_cell(screen, current.t, current.x + c, current.y + r)
             render.draw_panel_hud(screen, score, level, lines, next_type)
             overlay.draw(screen, font, dims.total_w, dims.total_h)
-            pygame.display.flip()
-            continue
+            pygame.display.flip(); continue
 
         # Horizontal movement
         keys = pygame.key.get_pressed()
@@ -164,7 +158,7 @@ def main():
                 if not collide(board, t): current = t; score += 1
                 else: break
 
-        # Gravity and lock delay
+        # Gravity/lock
         down = Piece(current.t, [r[:] for r in current.shape], current.state, current.x, current.y+1)
         grounded = collide(board, down)
         if grounded:
@@ -177,6 +171,7 @@ def main():
                     score += c*(level+1)*100; lines += c
                     if lines // 10 > level:
                         level += 1; grav = gravity_interval(level)
+                render.rebuild_board_surface(board)
                 current = Piece.spawn(next_type)
                 next_type = rng.next_piece()
                 acc = 0; lock_timer = 0; is_grounded = False
@@ -193,12 +188,9 @@ def main():
                 lock_timer = 0
                 break
 
-        # DRAW (blit-only path)
+        # DRAW: background + cached board + moving piece
         render.redraw_static(screen)
-        for y in range(ROWS):
-            for x in range(COLS):
-                tcell = board[y][x]
-                if tcell: render.draw_cell(screen, tcell, x, y)
+        render.blit_board_surface(screen)
         gy = ghost_y(board, current)
         for r, row in enumerate(current.shape):
             for c, v in enumerate(row):
@@ -206,7 +198,6 @@ def main():
         for r, row in enumerate(current.shape):
             for c, v in enumerate(row):
                 if v and current.y + r >= 0: render.draw_cell(screen, current.t, current.x + c, current.y + r)
-
         render.draw_panel_hud(screen, score, level, lines, next_type)
         pygame.display.flip()
 
